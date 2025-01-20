@@ -41,7 +41,7 @@ export const registerUser = async (
         });
         return;
     } catch (err) {
-        console.log('error during register');
+        console.error('error during register');
         res.status(500).json({
             error: 'Internal server error.',
         });
@@ -67,8 +67,10 @@ export const loginUser = async (req: Request<{}, {}, RegisterUserDTO>, res: Resp
             return;
         }
         req.session.userId = user._id.toString();
+
         res.status(200).json({
             message: 'Login successful',
+            redirectUrl: '/',
             user: {
                 username: user.username,
                 email: user.email,
