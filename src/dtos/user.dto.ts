@@ -18,6 +18,14 @@ export class RegisterUserDTO {
     password: string;
 }
 
+export class UpdateUserDTO {
+    @IsNotEmpty({ message: 'Username is required' })
+    @IsString()
+    @MinLength(3, { message: 'Username must be at least 3 characters' })
+    @MaxLength(30, { message: 'Username must be at most 30 characters' })
+    username: string;
+}
+
 export interface RegisterUserResponse {
     username: string;
     email: string;
@@ -25,6 +33,7 @@ export interface RegisterUserResponse {
 
 export interface LoginUserResponse {
     message: string;
+    redirectUrl: string;
     user: {
         username: string;
         email: string;
