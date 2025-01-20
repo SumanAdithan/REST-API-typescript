@@ -1,5 +1,5 @@
-import { hashPassword } from '@utils';
-import { ErrorDTO, RegisterUserDTO, RegisterUserResponse, ValidationErrorDTO } from '@dtos';
+import { comparePassword, generateToken, hashPassword } from '@utils';
+import { ErrorDTO, LoginUserResponse, RegisterUserDTO, RegisterUserResponse, ValidationErrorDTO } from '@dtos';
 import { Request, Response } from 'express-serve-static-core';
 import { createUser, getUserByEmail } from 'models';
 import { plainToClass } from 'class-transformer';
@@ -41,9 +41,43 @@ export const registerUser = async (
         });
         return;
     } catch (err) {
+        console.log('error during register');
         res.status(500).json({
             error: 'Internal server error.',
         });
+        return;
+    }
+};
+
+export const loginUser = async (req: Request<{}, {}, RegisterUserDTO>, res: Response<LoginUserResponse | ErrorDTO>) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            res.status(400).json({ error: 'Email and password are required' });
+            return;
+        }
+        const user = await getUserByEmail(email).select('+authentication.salt +authentication.password');
+        if (!user) {
+            res.status(401).json({ error: 'Invalid email or password' });
+            return;
+        }
+        const isPasswordMatch = await comparePassword(password, user.authentication.password);
+        if (!isPasswordMatch) {
+            res.status(401).json({ error: 'Invalid email or password' });
+            return;
+        }
+        req.session.userId = user._id.toString();
+        res.status(200).json({
+            message: 'Login successful',
+            user: {
+                username: user.username,
+                email: user.email,
+            },
+        });
+        return;
+    } catch (err) {
+        console.error('Error during login:', err);
+        res.status(500).json({ error: 'Internal server error' });
         return;
     }
 };

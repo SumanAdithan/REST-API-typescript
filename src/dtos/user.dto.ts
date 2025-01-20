@@ -22,3 +22,11 @@ export interface RegisterUserResponse {
     username: string;
     email: string;
 }
+
+export interface LoginUserResponse {
+    message: string;
+    user: {
+        username: string;
+        email: string;
+    };
+}
